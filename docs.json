@@ -3,6 +3,15 @@
   "theme": "mint",
   "name": "Framelink",
   "colors": { "primary": "#0D9373" },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://www.framelink.ai"
+  },
+  "favicon": {
+    "light": "/logo/favicon-light.svg",
+    "dark": "/logo/favicon-dark.svg"
+  },
   "navigation": {
     "groups": [{ "group": "Getting started", "pages": ["quickstart"] }]
   },
