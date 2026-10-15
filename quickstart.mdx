@@ -103,7 +103,22 @@ Or paste the following into your `~/.cursor/mcp.json` file. You can also install
 ```
 </Tab>
 
-<Tab title="OpenAI Codex">
+<Tab title="Antigravity">
+Add this to your Antigravity MCP config file. See the [Antigravity MCP docs](https://antigravity.google/docs/mcp) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+</Tab>
+
+<Tab title="Codex">
 Add the following to your Codex configuration. See [OpenAI Codex](https://github.com/openai/codex) for more info.
 
 ```toml
@@ -111,6 +126,61 @@ Add the following to your Codex configuration. See [OpenAI Codex](https://github
 command = "npx"
 args = ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
 ```
+</Tab>
+
+<Tab title="OpenCode">
+Add this to your OpenCode configuration file. See the [OpenCode MCP docs](https://opencode.ai/docs/mcp-servers) for more info.
+
+```json
+{
+  "mcp": {
+    "Framelink_Figma_MCP": {
+      "type": "local",
+      "command": ["npx", "-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
+      "enabled": true
+    }
+  }
+}
+```
+</Tab>
+
+<Tab title="Trae">
+Use the **Add manually** feature and fill in the JSON configuration. See the [Trae docs](https://docs.trae.ai/ide/model-context-protocol?_lang=en) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+</Tab>
+
+<Tab title="Kiro">
+1. Navigate to **Kiro** → **MCP Servers**.
+2. Click the **+ Add** button.
+3. Paste the configuration:
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
+      "env": {},
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+4. Click **Save** to apply.
+
+See the [Kiro MCP docs](https://kiro.dev/docs/mcp/configuration/) for more info.
 </Tab>
 
 <Tab title="VS Code">
@@ -129,33 +199,11 @@ Add this to your VS Code MCP config file. See the [VS Code MCP docs](https://cod
 ```
 </Tab>
 
-<Tab title="Windsurf">
-Add this to your Windsurf MCP config file. See the [Windsurf MCP docs](https://docs.windsurf.com/windsurf/cascade/mcp) for more info.
+<Tab title="Pi">
+Run this command in your terminal, then `/reload` any open Pi session. Requires Pi 0.99 or later. See the [Pi MCP docs](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/docs/mcp.md) for more info.
 
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-</Tab>
-
-<Tab title="Claude Desktop">
-Open Claude Desktop, go to **Settings**, then **Developer**, and edit your `claude_desktop_config.json` file. See the [Claude Desktop MCP docs](https://modelcontextprotocol.io/quickstart/user) for more info.
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
+```bash
+pi mcp add Framelink_Figma_MCP -- npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio
 ```
 </Tab>
 
@@ -216,6 +264,23 @@ amp mcp add Framelink_Figma_MCP -- npx -y figma-developer-mcp --figma-api-key=YO
 <Accordion title="BoltAI">
 
 Open **Settings**, navigate to **Plugins**, and enter the following configuration. See [BoltAI's documentation](https://docs.boltai.com/docs/plugins/mcp-servers) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Claude Desktop">
+
+Open Claude Desktop, go to **Settings**, then **Developer**, and edit your `claude_desktop_config.json` file. See the [Claude Desktop MCP docs](https://modelcontextprotocol.io/quickstart/user) for more info.
 
 ```json
 {
@@ -341,23 +406,6 @@ Open the Gemini CLI settings file at `~/.gemini/settings.json` and add the follo
 
 </Accordion>
 
-<Accordion title="Google Antigravity">
-
-Add this to your Antigravity MCP config file. See the [Antigravity MCP docs](https://antigravity.google/docs/mcp) for more info.
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-
-</Accordion>
-
 <Accordion title="JetBrains AI Assistant">
 
 1. In any JetBrains IDE, go to **Settings** → **Tools** → **AI Assistant** → **Model Context Protocol (MCP)**.
@@ -401,32 +449,6 @@ You can also configure it via the Kilo Code UI under **Settings** → **MCP Serv
 
 </Accordion>
 
-<Accordion title="Kiro">
-
-1. Navigate to **Kiro** → **MCP Servers**.
-2. Click the **+ Add** button.
-3. Paste the configuration:
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
-      "env": {},
-      "disabled": false,
-      "autoApprove": []
-    }
-  }
-}
-```
-
-4. Click **Save** to apply.
-
-See the [Kiro MCP docs](https://kiro.dev/docs/mcp/configuration/) for more info.
-
-</Accordion>
-
 <Accordion title="LM Studio">
 
 1. Navigate to **Program** (right side) → **Install** → **Edit mcp.json**.
@@ -446,24 +468,6 @@ See the [Kiro MCP docs](https://kiro.dev/docs/mcp/configuration/) for more info.
 3. Click **Save**.
 
 See [LM Studio MCP support](https://lmstudio.ai/blog/lmstudio-v0.3.17) for more info.
-
-</Accordion>
-
-<Accordion title="Opencode">
-
-Add this to your Opencode configuration file. See the [Opencode MCP docs](https://opencode.ai/docs/mcp-servers) for more info.
-
-```json
-{
-  "mcp": {
-    "Framelink_Figma_MCP": {
-      "type": "local",
-      "command": ["npx", "-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
-      "enabled": true
-    }
-  }
-}
-```
 
 </Accordion>
 
@@ -579,23 +583,6 @@ Then add the following:
 
 </Accordion>
 
-<Accordion title="Trae">
-
-Use the **Add manually** feature and fill in the JSON configuration. See the [Trae docs](https://docs.trae.ai/ide/model-context-protocol?_lang=en) for more info.
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-
-</Accordion>
-
 <Accordion title="Visual Studio 2022">
 
 Add this to your Visual Studio MCP configuration. See the [Visual Studio MCP docs](https://learn.microsoft.com/visualstudio/ide/mcp-servers?view=vs-2022) for more info.
@@ -637,6 +624,23 @@ Add this to your Visual Studio MCP configuration. See the [Visual Studio MCP doc
 4. Click **Save**.
 
 See the [Warp MCP docs](https://docs.warp.dev/knowledge-and-collaboration/mcp#adding-an-mcp-server) for more info.
+
+</Accordion>
+
+<Accordion title="Windsurf">
+
+Add this to your Windsurf MCP config file. See the [Windsurf MCP docs](https://docs.windsurf.com/windsurf/cascade/mcp) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
 
 </Accordion>
 
