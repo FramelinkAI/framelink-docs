@@ -1,230 +1,144 @@
 ---
 title: "Configuration"
-description: "Complete reference for all configuration options available in the Framelink MCP for Figma, including CLI arguments and environment variables."
+description: "Reference for every Framelink MCP for Figma server option: CLI flags, environment variables, and defaults."
 ---
 
-This page documents all configuration options available in the Framelink MCP for Figma. Configuration can be provided via CLI arguments or environment variables.
+Every server option can be set with a CLI flag, an environment variable, or left at its default. Precedence is CLI flag, then environment variable, then default. Environment variables can come from your shell or from a `.env` file, which the server reads from its working directory at startup; pass `--env` to load a different file. Values in the `.env` file override variables already set in the shell.
 
-## CLI Arguments
+For step-by-step setup of credentials, see [Authentication](/authentication). The [`fetch` command](/fetch) accepts a subset of these options.
 
-All CLI arguments can be passed when starting the server.
+## Authentication
 
-### `--figma-api-key`
+How the server authenticates to the Figma API. Stdio mode and the `fetch` command exit at startup unless one of the first two is set. See [Authentication](/authentication) for how to choose and set up a method.
 
-Your Figma API key (Personal Access Token). This is the recommended authentication method for most users.
+<ResponseField name="--figma-api-key" type="string">
+  Env: `FIGMA_API_KEY`
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx
-```
+  A Figma personal access token. Sent to Figma in the `X-Figma-Token` header.
+</ResponseField>
 
-### `--figma-oauth-token`
+<ResponseField name="--figma-oauth-token" type="string">
+  Env: `FIGMA_OAUTH_TOKEN`
 
-Figma OAuth Bearer token. Use this if you're authenticating via OAuth instead of a Personal Access Token.
+  A Figma OAuth access token. Sent to Figma as `Authorization: Bearer`. If both this and a personal access token are set, the OAuth token is used.
+</ResponseField>
 
-```bash
-npx figma-developer-mcp --figma-oauth-token=your-oauth-token
-```
+### Per-request token
 
-### `--env`
+HTTP mode only. A token sent by the MCP client on an individual request overrides the server's own credentials for that request. See [Per-request tokens in HTTP mode](/authentication#per-request-tokens-in-http-mode).
 
-Path to a custom `.env` file to load environment variables from. If not specified, the server looks for a `.env` file in the current working directory.
+<ResponseField name="X-Figma-Token" type="header">
+  A Figma personal access token for this request. Takes precedence over `Authorization`.
+</ResponseField>
 
-```bash
-npx figma-developer-mcp --env=/path/to/custom/.env
-```
+<ResponseField name="Authorization" type="header">
+  A Figma OAuth token for this request, in the form `Bearer YOUR-KEY`.
+</ResponseField>
 
-### `--stdio`
+## Transport
 
-Run the server in stdio transport mode. Use this flag for local MCP client integrations (Cursor, Claude Desktop, Windsurf, and similar) that launch the server as a subprocess and communicate over stdin/stdout. Without this flag, the server starts an HTTP server on the configured port instead.
+<ResponseField name="--stdio" type="boolean" default="false">
+  Run over stdin/stdout instead of HTTP. Use this when your MCP client launches the server as a subprocess, which is how most editor configs work. Without it, the server starts an HTTP server; see [HTTP server](/http-server).
+</ResponseField>
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --stdio
-```
+<ResponseField name="--port" type="number" default="3333">
+  Env: `FRAMELINK_PORT` (`PORT` is also accepted)
 
-### `--port`
+  Port for the HTTP server. Ignored in stdio mode.
+</ResponseField>
 
-Port to run the HTTP server on. Only applies when running in HTTP/SSE mode (not stdio). Defaults to `3333`.
+<ResponseField name="--host" type="string" default="127.0.0.1">
+  Env: `FRAMELINK_HOST`
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --port=8080
-```
+  Address the HTTP server binds to. Ignored in stdio mode.
+</ResponseField>
 
-### `--host`
+## Output
 
-Host address to bind the HTTP server to. Only applies when running in HTTP/SSE mode (not stdio). Defaults to `127.0.0.1`.
+<ResponseField name="--format" type="tree | yaml | json" default="tree">
+  Env: `OUTPUT_FORMAT`
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --host=0.0.0.0
-```
+  Format of the design data returned by `get_figma_data`. `tree` is the most compact and is built for LLMs; use `yaml` or `json` only if something needs to parse the output. Any other value stops the server at startup. The `fetch` command defaults to `yaml` instead.
+</ResponseField>
 
-### `--format`
+<ResponseField name="--json" type="boolean" default="false">
+  Alias for `--format=json`. If both are passed, `--format` wins.
+</ResponseField>
 
-Output format for the design data returned by the MCP server's tools. Defaults to `tree`. The only reason to use anything else at this point is if you need it machine parsable.
+## Images
 
-- `tree` — default; the most compact, LLM-optimized format.
-- `yaml` — fewer tokens than JSON for typical designs.
-- `json` — useful when piping output into tools that expect JSON.
+<ResponseField name="--image-dir" type="string" default="current working directory">
+  Env: `IMAGE_DIR`
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --format=yaml --stdio
-```
+  Base directory for `download_figma_images`. The tool only writes files inside it, and its description tells the agent this path. Relative paths resolve against the server's working directory. In stdio mode, set this explicitly: clients often launch the server outside your project, and the server prints a warning when it is unset and image downloads are on.
+</ResponseField>
 
-The `fetch` CLI keeps `yaml` as its default, since its output is usually piped into other tools; this `tree` default applies to the MCP server.
+<ResponseField name="--skip-image-downloads" type="boolean" default="false">
+  Env: `SKIP_IMAGE_DOWNLOADS` (`true` or `false`)
 
-### `--json`
+  Don't register the `download_figma_images` tool.
+</ResponseField>
 
-Back-compat alias for `--format=json`. Prefer `--format` for new configs.
+## Network
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --json
-```
+<ResponseField name="--proxy" type="string">
+  Env: `FIGMA_PROXY`
 
-### `--image-dir`
+  Proxy URL for outbound requests to Figma, such as `http://proxy.example.com:8080`. When unset, the server uses the standard `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` variables if any are present. Pass `none` to ignore those variables and connect directly:
 
-Base directory for image downloads. The `download_figma_images` tool will only write files within this directory. Defaults to the current working directory. The tool description shown to AI agents includes this path so they know where to save images.
+  ```bash
+  npx figma-developer-mcp --figma-api-key=figd_xxxxxx --proxy=none --stdio
+  ```
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --image-dir=/path/to/project
-```
+  See [Network proxy and connection errors](/troubleshooting#network-proxy-and-connection-errors).
+</ResponseField>
 
-### `--proxy`
+## Telemetry
 
-HTTP proxy URL for networks that require outbound traffic to go through a proxy server. The server also automatically respects the standard `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` environment variables when they are available.
+<ResponseField name="--no-telemetry" type="boolean" default="false">
+  Env: `FRAMELINK_TELEMETRY=off`, or `DO_NOT_TRACK` set to any non-empty value other than `0`
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --proxy=http://proxy.example.com:8080
-```
+  Turn off anonymous usage telemetry. When on, the server sends one event per tool call describing timing, response shape, and errors, with Figma credentials scrubbed.
+</ResponseField>
 
-Pass `--proxy=none` to explicitly ignore any proxy environment variables and connect directly. Useful when a system-level proxy is misbehaving for `api.figma.com` specifically and you can't easily unset the environment variable.
+## Files
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --proxy=none --stdio
-```
+<ResponseField name="--env" type="string" default="./.env">
+  Path to the `.env` file to load. Relative paths resolve against the server's working directory.
+</ResponseField>
 
-See the [network proxy troubleshooting guide](/troubleshooting#network-proxy-and-connection-errors) for more details.
+## Information
 
-### `--skip-image-downloads`
+<ResponseField name="--help" type="boolean">
+  Print all options and exit.
+</ResponseField>
 
-Disable the `download_figma_images` tool. When set, the server will not register the image download tool, which can be useful if you don't need image export functionality.
+<ResponseField name="--version" type="boolean">
+  Print the server version and exit.
+</ResponseField>
 
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --skip-image-downloads
-```
+## Environment variables
 
-### `--no-telemetry`
+| Variable | Flag |
+|----------|------|
+| `FIGMA_API_KEY` | `--figma-api-key` |
+| `FIGMA_OAUTH_TOKEN` | `--figma-oauth-token` |
+| `FRAMELINK_PORT`, `PORT` | `--port` |
+| `FRAMELINK_HOST` | `--host` |
+| `OUTPUT_FORMAT` | `--format` |
+| `IMAGE_DIR` | `--image-dir` |
+| `SKIP_IMAGE_DOWNLOADS` | `--skip-image-downloads` |
+| `FIGMA_PROXY` | `--proxy` |
+| `FRAMELINK_TELEMETRY`, `DO_NOT_TRACK` | `--no-telemetry` |
+| `HTTP_PROXY`, `HTTPS_PROXY`, `NO_PROXY` | none; used when `--proxy` is unset |
 
-Disables anonymous usage telemetry. The server normally sends one event per tool call describing timing, response shape, and any errors (with Figma credentials scrubbed) so we can prioritize improvements. This flag, `FRAMELINK_TELEMETRY=off`, or `DO_NOT_TRACK=1` all turn it off.
-
-```bash
-npx figma-developer-mcp --figma-api-key=figd_xxxxxx --no-telemetry
-```
-
-### `--help`
-
-Display the help menu with all available options.
-
-```bash
-npx figma-developer-mcp --help
-```
-
-### `--version`
-
-Display the current version of the MCP server.
-
-```bash
-npx figma-developer-mcp --version
-```
-
-## Environment Variables
-
-All configuration options can also be set via environment variables. These can be defined in a `.env` file or set directly in your shell environment.
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `FIGMA_API_KEY` | Figma Personal Access Token | — |
-| `FIGMA_OAUTH_TOKEN` | Figma OAuth Bearer token | — |
-| `FRAMELINK_PORT` | HTTP server port | `3333` |
-| `FRAMELINK_HOST` | HTTP server host address | `127.0.0.1` |
-| `OUTPUT_FORMAT` | Output format (`tree`, `yaml`, or `json`) | `tree` |
-| `IMAGE_DIR` | Base directory for image downloads | Current working directory |
-| `FIGMA_PROXY` | HTTP proxy URL, or `none` to bypass any proxy env vars | — |
-| `SKIP_IMAGE_DOWNLOADS` | Disable image download tool (`true` or `false`) | `false` |
-| `FRAMELINK_TELEMETRY` | Set to `off` to disable anonymous usage telemetry | — |
-| `DO_NOT_TRACK` | Any truthy value disables anonymous usage telemetry | — |
-
-Note: `PORT` is also supported as an alias for `FRAMELINK_PORT` for backwards compatibility.
-
-The server also automatically respects the standard `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` environment variables when they are available in the server process.
-
-### Example `.env` file
+### Example .env file
 
 ```bash
 FIGMA_API_KEY=figd_xxxxxxxxxxxxxxxxxxxxxx
 FRAMELINK_PORT=3333
 FRAMELINK_HOST=127.0.0.1
 OUTPUT_FORMAT=tree
+IMAGE_DIR=/path/to/your/project
 SKIP_IMAGE_DOWNLOADS=false
 ```
-
-## Authentication
-
-The MCP server supports two authentication methods for the Figma API.
-
-### Personal Access Token (Recommended)
-
-Personal Access Tokens are the simplest way to authenticate. Generate one from your Figma account settings under **Settings > Security > Personal access tokens**.
-
-Required permissions:
-- **File content**: Read access
-- **Dev resources**: Read access
-
-Use via CLI argument:
-```bash
---figma-api-key=figd_xxxxxx
-```
-
-Or via environment variable:
-```bash
-FIGMA_API_KEY=figd_xxxxxx
-```
-
-### OAuth Bearer Token
-
-For applications using Figma's OAuth flow, you can provide an OAuth bearer token instead.
-
-Use via CLI argument:
-```bash
---figma-oauth-token=your-oauth-token
-```
-
-Or via environment variable:
-```bash
-FIGMA_OAUTH_TOKEN=your-oauth-token
-```
-
-When an OAuth token is provided, the server uses the `Authorization: Bearer` header instead of the `X-Figma-Token` header.
-
-### Per-request token
-
-When running in HTTP/SSE mode, clients can supply a Figma Personal Access Token on each request via the `X-Figma-Token` header. This is useful for centrally managed deployments — an IT or platform team can run one vetted instance behind their proxy and logging while each user still authenticates with their own Figma identity, without resorting to a shared service-account token.
-
-```http
-POST /mcp HTTP/1.1
-X-Figma-Token: figd_xxxxxx
-```
-
-Requests can also authenticate with a Figma OAuth token via the standard `Authorization: Bearer <token>` header. Either header takes precedence over `FIGMA_API_KEY` and `FIGMA_OAUTH_TOKEN` for that request only. If the header is absent, the server falls back to its configured global credentials.
-
-The server can also be started in HTTP mode with no credentials configured — in that case every request must include `X-Figma-Token`, or the tool call will fail. Stdio mode and the `fetch` CLI have no per-request channel and still require credentials at startup.
-
-## Configuration Precedence
-
-When the same option is specified in multiple places, CLI arguments take precedence over environment variables.
-
-1. **CLI arguments** (highest priority)
-2. **Environment variables** (from `.env` file or shell)
-3. **Default values** (lowest priority)
-
-For example, if you have `FRAMELINK_PORT=8080` in your `.env` file but run the server with `--port=3000`, the server will use port `3000`.
-
-For Figma authentication specifically, a per-request `X-Figma-Token` header on an HTTP request takes precedence over both CLI arguments and environment variables for that request only. See [Per-request token](/configuration#per-request-token).

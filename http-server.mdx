@@ -1,0 +1,79 @@
+---
+title: "Run as an HTTP server"
+description: "Run Framelink MCP for Figma as a standalone local HTTP server and connect your MCP client to it by URL."
+---
+
+The recommended setup is the stdio one in the [Quickstart](/quickstart), where your client launches the server for you. Run it as a standalone HTTP server instead when your client can't launch local commands, or when several clients should share one server.
+
+## Start the server
+
+Run the server without the `--stdio` flag:
+
+```bash
+npx figma-developer-mcp --figma-api-key=YOUR-KEY
+```
+
+The server prints its configuration, including which authentication method it picked up, then the addresses to connect to:
+
+```text
+Initializing Figma MCP Server in HTTP mode on 127.0.0.1:3333...
+[INFO] HTTP server listening on port 3333
+[INFO] StreamableHTTP endpoint available at http://127.0.0.1:3333/mcp
+[INFO] StreamableHTTP endpoint available at http://127.0.0.1:3333/sse (backward compat)
+```
+
+Leave it running while you use your client. Stop it with Ctrl+C.
+
+## Change the host or port
+
+The server listens on `127.0.0.1:3333` by default. To use a different port, pass `--port` or set `FRAMELINK_PORT`:
+
+```bash
+npx figma-developer-mcp --figma-api-key=YOUR-KEY --port=4000
+```
+
+To listen on a different address, pass `--host` or set `FRAMELINK_HOST`. See [Transport](/configuration#transport) for details.
+
+<Warning>
+Keep the default `127.0.0.1` unless you need other machines to reach the server. Binding to `0.0.0.0` exposes it to your network, and anyone who can reach it can read Figma files using the token you started it with. On the default loopback address, the server also rejects requests whose `Host` header isn't a localhost name, which guards against DNS rebinding from web pages.
+</Warning>
+
+## Connect your client
+
+Point your client at the `/mcp` endpoint. Most clients that support remote servers take a `url` in their MCP config:
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "url": "http://localhost:3333/mcp"
+    }
+  }
+}
+```
+
+In Claude Code, add it with:
+
+```bash
+claude mcp add --transport http Framelink_Figma_MCP http://localhost:3333/mcp
+```
+
+If you changed the port, use that port in the URL.
+
+### The `/sse` endpoint
+
+The server speaks Streamable HTTP. `/sse` serves the same Streamable HTTP transport as `/mcp`, so older configs that point at `/sse` keep working as long as the client supports Streamable HTTP. Clients that only speak the legacy SSE transport can't connect: the server answers `GET` requests on both endpoints with `405 Method Not Allowed`. New configs should use `/mcp`.
+
+## Provide the Figma token
+
+There are two ways to give the HTTP server a Figma token.
+
+**At server start.** Pass `--figma-api-key` or `--figma-oauth-token`, or set `FIGMA_API_KEY` or `FIGMA_OAUTH_TOKEN` in the environment or a `.env` file. Every client that connects uses this token, so the client config needs no token at all.
+
+**Per request.** Clients can send their own token on each request, either as an `X-Figma-Token` header carrying a personal access token or as an `Authorization: Bearer` header carrying an OAuth token. A per-request token overrides the server's token for that request. In HTTP mode the server can start with no token at all; it then reports `Per-request X-Figma-Token header` as its authentication method, and tool calls fail unless the request carries a token.
+
+See [Authentication](/authentication) for creating a token, [Per-request token](/configuration#per-request-token) for the header details, and [Configuration](/configuration) for every flag and environment variable.
+
+## Run from source
+
+To run the server from a clone of the repository, for development or to test unreleased changes, follow the [contributing guide](https://github.com/GLips/Figma-Context-MCP/blob/main/CONTRIBUTING.md).

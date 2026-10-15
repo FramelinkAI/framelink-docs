@@ -18,19 +18,14 @@
   },
   "navigation": {
     "groups": [
+      { "group": "Get started", "pages": ["index", "quickstart"] },
       {
         "group": "Guides",
-        "pages": [
-          "index",
-          "quickstart",
-          "configuration",
-          "fetch",
-          "best-practices",
-          "troubleshooting",
-          "alternate-methods"
-        ]
-      }
+        "pages": ["authentication", "http-server", "best-practices", "troubleshooting"]
+      },
+      { "group": "Reference", "pages": ["configuration", "fetch", "tools"] }
     ]
   },
+  "redirects": [{ "source": "/alternate-methods", "destination": "/http-server" }],
   "contextual": { "options": ["copy", "view", "chatgpt", "claude", "cursor", "vscode"] }
 }

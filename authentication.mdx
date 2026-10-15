@@ -1,0 +1,140 @@
+---
+title: "Authentication"
+description: "Choose how Framelink MCP for Figma authenticates to the Figma API: a personal access token, an OAuth token, or a per-request token in HTTP mode."
+---
+
+Framelink MCP for Figma calls the Figma REST API on your behalf, so it needs a Figma credential. There are three ways to provide one:
+
+- **Personal access token** — recommended for most people. Set once when the server starts.
+- **OAuth token** — for when you already have an OAuth access token from a Figma OAuth app.
+- **Per-request token** — HTTP mode only. Each MCP client sends its own token with every request.
+
+Every option below is also listed in the [Configuration](/configuration#authentication) reference.
+
+## Personal access token
+
+A personal access token is tied to your Figma account and can read any file your account can open. Use this unless you have a specific reason not to.
+
+### Create the token
+
+Follow [Get a Figma access token](/quickstart#get-a-figma-access-token) in the quickstart. It walks through generating the token in Figma, and [its scopes step](/quickstart#token-scopes) lists the scopes to tick.
+
+The server only reads file content and renders images, so **File content: Read** (`file_content:read`) is the one scope it strictly needs. The server's own 403 error message also names **Dev resources: Read** (`file_dev_resources:read`), so grant both if you're trimming scopes. The quickstart recommends a broader set; using it does no harm.
+
+### Pass the token to the server
+
+Use the `--figma-api-key` flag:
+
+```bash
+npx figma-developer-mcp --figma-api-key=figd_xxxxxx --stdio
+```
+
+Or the `FIGMA_API_KEY` environment variable, in your shell or in a `.env` file:
+
+```bash
+FIGMA_API_KEY=figd_xxxxxx
+```
+
+In an MCP client config, pass it in `args`:
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+Or in `env`:
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--stdio"],
+      "env": {
+        "FIGMA_API_KEY": "YOUR-KEY"
+      }
+    }
+  }
+}
+```
+
+The server sends the token to Figma in the `X-Figma-Token` header.
+
+## OAuth token
+
+Use an OAuth token if you have a Figma OAuth app and already obtain access tokens through Figma's OAuth flow — for example, a platform that signs users in with Figma. The server does not run the OAuth flow or refresh tokens; you supply a current access token, and when it expires, requests fail until you supply a new one.
+
+Use the `--figma-oauth-token` flag:
+
+```bash
+npx figma-developer-mcp --figma-oauth-token=YOUR-KEY --stdio
+```
+
+Or the `FIGMA_OAUTH_TOKEN` environment variable:
+
+```bash
+FIGMA_OAUTH_TOKEN=YOUR-KEY
+```
+
+The server sends an OAuth token to Figma as `Authorization: Bearer YOUR-KEY`. If both an OAuth token and a personal access token are configured, the OAuth token is used.
+
+## Per-request tokens in HTTP mode
+
+When the server runs as an [HTTP server](/http-server), each MCP request can carry its own Figma token. This suits a shared deployment: a platform team runs one vetted instance behind their proxy and logging, and each person still authenticates as themselves instead of through a shared service-account token.
+
+Send a personal access token in the `X-Figma-Token` header:
+
+```http
+POST /mcp HTTP/1.1
+X-Figma-Token: figd_xxxxxx
+```
+
+Or send an OAuth token in the `Authorization` header:
+
+```http
+POST /mcp HTTP/1.1
+Authorization: Bearer YOUR-KEY
+```
+
+Clients that support custom headers for HTTP servers usually take them in the server entry. The exact keys vary by client; a typical shape is:
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "url": "http://127.0.0.1:3333/mcp",
+      "headers": {
+        "X-Figma-Token": "YOUR-KEY"
+      }
+    }
+  }
+}
+```
+
+### Precedence
+
+For each request, the server uses the first credential it finds:
+
+1. The `X-Figma-Token` header.
+2. The `Authorization: Bearer` header.
+3. The server's own credentials from `--figma-oauth-token` / `FIGMA_OAUTH_TOKEN`, then `--figma-api-key` / `FIGMA_API_KEY`.
+
+A header applies to that request only. It never changes the server's own credentials.
+
+### Run with no server credentials
+
+In HTTP mode the server starts without any credentials configured, and its startup output reports `Authentication Method: Per-request X-Figma-Token header`. Every request must then carry `X-Figma-Token` or `Authorization: Bearer`; a tool call without either fails with an error asking for one.
+
+```bash
+npx figma-developer-mcp --port=3333
+```
+
+<Warning>
+Stdio mode and the [`fetch` command](/fetch) have no way to receive a token per request. They need `--figma-api-key`, `--figma-oauth-token`, or the matching environment variable at startup, and exit with an error if none is set.
+</Warning>

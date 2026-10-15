@@ -1,6 +1,6 @@
 ---
-title: "CLI usage"
-description: "Use the Framelink CLI to pull simplified Figma design data without running a server."
+title: "CLI"
+description: "Use the Framelink MCP for Figma CLI to pull simplified Figma design data without running a server."
 ---
 
 Beyond running as an MCP server, `figma-developer-mcp` can be used directly from the command line to fetch simplified Figma design data. This is useful for scripting, piping design data into other tools, or quick one-off lookups during development.
@@ -9,16 +9,16 @@ Running `figma-developer-mcp` with no subcommand starts the MCP server as usual.
 
 ## fetch
 
-Pull simplified design data for a Figma file or node and print it to stdout. Uses the same simplification pipeline as the MCP server's `get_figma_data` tool, so the output is identical.
+Pull simplified design data for a Figma file or node and print it to stdout. Uses the same simplification pipeline as the MCP server's `get_figma_data` tool.
 
 ```bash
 npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File?node-id=1-2" \
   --figma-api-key=figd_xxxxxx
 ```
 
-Output is YAML by default. Pass `--format=json` for JSON, or `--format=tree` for the compact tree format. See [Configuration](/configuration#format) for details on each format.
+Output is YAML by default. Pass `--format=json` for JSON, or `--format=tree` for the compact tree format. This differs from the MCP server, which defaults to `tree`: YAML and JSON are easier to pipe into standard tools. See [Configuration](/configuration#output) for details on each format.
 
-Authentication works the same as the server — provide a Figma API key or OAuth token via flag or environment variable. See [Configuration](/configuration) for details on authentication and `.env` files.
+Authentication works the same as the server. Provide a Figma API key or OAuth token with a flag, or set `FIGMA_API_KEY` or `FIGMA_OAUTH_TOKEN` in the environment or a `.env` file. If neither is set, `fetch` exits with an error. See [Authentication](/authentication) for how to get a token.
 
 <Note>
   Shell characters like `&` in Figma URLs can cause issues. Always wrap URLs in quotes.
@@ -26,21 +26,45 @@ Authentication works the same as the server — provide a Figma API key or OAuth
 
 ## Flags
 
-The `fetch` subcommand accepts a Figma URL as a positional argument, plus the following flags:
-
-| Flag | Description |
-|------|-------------|
-| `--file-key` | Figma file key (overrides the URL) |
-| `--node-id` | Node ID in `1234:5678` format (overrides the URL) |
-| `--depth` | Limit tree traversal depth |
-| `--format` | Output format: `yaml` (default), `json`, or `tree` |
-| `--json` | Back-compat alias for `--format=json` |
-| `--figma-api-key` | Figma API key (Personal Access Token) |
-| `--figma-oauth-token` | Figma OAuth Bearer token |
-| `--env` | Path to `.env` file |
-| `--no-telemetry` | Disable anonymous usage telemetry |
+The `fetch` subcommand takes a Figma URL as an optional positional argument, plus the following flags. You need either a URL or `--file-key`.
 
 When both a URL and explicit flags are provided, the flags take precedence. This lets you override just the node ID while still pulling the file key from a URL, for example.
+
+<ResponseField name="--file-key" type="string">
+  Figma file key. Overrides the file key in the URL. When this is set, a URL that can't be parsed is ignored instead of causing an error.
+</ResponseField>
+
+<ResponseField name="--node-id" type="string">
+  Node ID in `1234:5678` format. Overrides the `node-id` in the URL. If neither is given, the whole file is fetched.
+</ResponseField>
+
+<ResponseField name="--depth" type="number">
+  Limit how many levels of the node tree to traverse. Unlimited by default.
+</ResponseField>
+
+<ResponseField name="--format" type="string" default="yaml">
+  Output format: `yaml`, `json`, or `tree`. Any other value is an error.
+</ResponseField>
+
+<ResponseField name="--json" type="boolean" default="false">
+  Alias for `--format=json`. Ignored when `--format` is also set.
+</ResponseField>
+
+<ResponseField name="--figma-api-key" type="string">
+  Figma Personal Access Token. Falls back to the `FIGMA_API_KEY` environment variable.
+</ResponseField>
+
+<ResponseField name="--figma-oauth-token" type="string">
+  Figma OAuth Bearer token. Falls back to the `FIGMA_OAUTH_TOKEN` environment variable. Used instead of the API key when both are set.
+</ResponseField>
+
+<ResponseField name="--env" type="string" default=".env in the current directory">
+  Path to a `.env` file to load before reading credentials.
+</ResponseField>
+
+<ResponseField name="--no-telemetry" type="boolean" default="false">
+  Disable anonymous usage telemetry for this run. See [Configuration](/configuration#telemetry).
+</ResponseField>
 
 ## Examples
 
@@ -77,4 +101,11 @@ npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File" \
 ```bash
 npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File?node-id=1-2" \
   --figma-api-key=figd_xxxxxx > design-data.yaml
+```
+
+### Read the token from the environment
+
+```bash
+export FIGMA_API_KEY=figd_xxxxxx
+npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File?node-id=1-2"
 ```

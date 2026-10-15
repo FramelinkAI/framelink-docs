@@ -3,9 +3,23 @@ title: "Troubleshooting"
 description: "Troubleshooting guide for common issues with the Framelink MCP for Figma."
 ---
 
-<Note>This page is a work in progress.</Note>
+Fixes for the most common errors when running Framelink MCP for Figma. If your problem isn't listed here, ask in our [Discord server](https://discord.gg/MeE3UEjdGN) or [open an issue on GitHub](https://github.com/GLips/Figma-Context-MCP/issues).
 
-A detailed guide for troubleshooting common issues is coming soon. In the meantime, you can join our [Discord server](https://discord.gg/MeE3UEjdGN) or [leave an issue on Github](https://github.com/GLips/Figma-Context-MCP/issues) and we'll help you out.
+## Find your error
+
+Match what you see to the section that fixes it.
+
+| What you see | Go to |
+| --- | --- |
+| `fetch failed`, `ECONNRESET`, or `Connection was reset` | [Network proxy and connection errors](#network-proxy-and-connection-errors) |
+| `Cannot find module 'xxxxx'` | [Cannot find module](#cannot-find-module) |
+| 403 Forbidden with `"err":"Invalid scope(s): ..."` | [Invalid scope(s)](#invalid-scopes--) |
+| 403 Forbidden with `"err":"Invalid token"` | [Invalid token](#invalid-token) |
+| 403 Forbidden with `"err":"Token expired"` | [Token expired](#token-expired) |
+| 403 Forbidden with `"err":"File not exportable"` | [File not exportable](#file-not-exportable) |
+| 403 Forbidden with any other body, or an HTML page | [Other causes](#other-causes) |
+| `429`, `Too Many Requests`, or `Figma API rate limit hit` | [429 Too Many Requests](#429-too-many-requests) |
+| Claude Desktop runs the server with the wrong Node.js version | [Claude Desktop: wrong Node version](#claude-desktop-wrong-node-version) |
 
 ## Network proxy and connection errors
 
@@ -59,7 +73,7 @@ Then open your client again. If the issue persists, please join our [Discord ser
 
 ## 403 Forbidden when accessing Figma files
 
-A 403 from the Figma API can have several distinct causes, and each has a different fix. Figma indicates which one you're hitting in the `"err"` field of the response body — find that string in the error your MCP client surfaced and match it to the section below.
+A 403 from the Figma API can have several distinct causes, and each has a different fix. Figma names the cause in the `"err"` field of the response body. The server includes that body verbatim in its error message (as `Response body: ...`), so find the `err` string in the error your MCP client surfaced and match it to a section below.
 
 ```json Example response body
 {"status":403,"err":"Invalid scope(s): ..."}
@@ -90,7 +104,7 @@ Figma did not recognize the token being sent. Common causes:
 
 OAuth access tokens have a limited lifetime. Once expired, every request returns 403 until you obtain a new one.
 
-**Fix:** Refresh your OAuth access token through your OAuth flow. If OAuth isn't essential for your setup, switching to a Personal Access Token avoids this entirely — PATs don't expire.
+**Fix:** Refresh your OAuth access token through your OAuth flow. If OAuth isn't essential for your setup, switching to a Personal Access Token avoids the refresh step — a PAT lasts until the expiration you chose when creating it.
 
 ### `"File not exportable"`
 
@@ -112,6 +126,8 @@ If the error body doesn't match one of the above:
 ## 429 Too Many Requests
 
 If you encounter a `429: Too Many Requests` error, it means you have exceeded the Figma API rate limits. There is no rate limiting built into Framelink MCP for Figma itself; these limits come directly from Figma.
+
+The server's error message passes along what Figma reports: how many seconds to wait before retrying, whether your seat type (Viewer or Collaborator) has a lower limit, whether the plan is Starter or Student, and an upgrade link when Figma provides one.
 
 There are a few common causes and solutions for this issue.
 

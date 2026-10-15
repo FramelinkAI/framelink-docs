@@ -1,0 +1,225 @@
+---
+title: "MCP tools"
+description: "Reference for the get_figma_data and download_figma_images tools: parameters, return values, and output formats."
+---
+
+Framelink MCP for Figma gives your agent two tools: `get_figma_data` reads a design, and `download_figma_images` saves its image assets into your project. Your agent calls them for you when you paste a Figma link. This page documents exactly what each tool accepts and returns.
+
+A few server options change how the tools behave. They are set when the server starts, not per call:
+
+- `--format` picks the output format of `get_figma_data`. See [Output formats](#output-formats) and [Configuration](/configuration#output).
+- `--image-dir` sets the directory `download_figma_images` is allowed to write into. See [Configuration](/configuration#images).
+- `--skip-image-downloads` removes `download_figma_images` from the server entirely, leaving only `get_figma_data`. See [Configuration](/configuration#images).
+
+## get_figma_data
+
+Fetches a Figma file, or one node in it, and returns the design simplified for an LLM: layout, content, visuals, and component information. The server advertises it as: "Get comprehensive Figma file data including layout, content, visuals, and component information."
+
+The file key and node ID both come from the Figma URL. In `https://www.figma.com/design/ABC123/My-File?node-id=1-2`, the file key is `ABC123` and the node ID is `1-2`. Pointing at a specific frame with a node ID keeps the response small; omitting it fetches the whole file.
+
+### Parameters
+
+<ResponseField name="fileKey" type="string" required>
+  The key of the Figma file, found in URLs like `figma.com/design/FILE-KEY/...` or `figma.com/file/FILE-KEY/...`. Must be alphanumeric.
+</ResponseField>
+
+<ResponseField name="nodeId" type="string">
+  The ID of the node to fetch, found in the URL as the `node-id` parameter. Accepts `1234:5678` or the URL form `1234-5678`; dashes are converted to colons before the request. Nested instance nodes use a semicolon-joined path, such as `I5666:180910;1:10515;1:10336`. This is still one node ID, not several. When omitted, the whole file is fetched.
+</ResponseField>
+
+<ResponseField name="depth" type="number">
+  How many levels of the node tree to traverse. When omitted, the full tree is returned. The tool tells agents not to set this unless you explicitly ask for it.
+</ResponseField>
+
+### Returns
+
+A single text result containing the simplified design, serialized in the server's output format (`tree` unless changed with `--format`). The output contains:
+
+- **Nodes**: the layer hierarchy, with each node's type, ID, name, layout, fills, strokes, effects, opacity, corner radius, text content, and text style. Fields are only emitted when they differ from the default.
+- **Global styles**: style values used by two or more nodes, or that come from a named Figma style, stored once and referenced by ID (such as `fill_1693a4d4`) from each node. Values used once are written inline on the node.
+- **Elements**: node bodies that repeat identically, stored once and referenced from each occurrence with a `template` ID (such as `EL-f4487ab7`).
+- **Components and component sets** that the Figma response includes for the fetched nodes.
+
+Auto-generated layer names like `Rectangle 12` or `Frame 5` are dropped, as are the names of text layers, which usually duplicate the text itself.
+
+Image fills include an `imageRef` (or `gifRef` for animated GIFs) and an `imageDownloadArguments` block with the cropping and sizing values the download needs. Pass these through to `download_figma_images`.
+
+If the request fails, the tool returns an error result whose text starts with `Error fetching file:` followed by the reason.
+
+## download_figma_images
+
+Downloads PNG, SVG, and GIF assets from a Figma file into a directory in your project, based on the IDs of image or icon nodes. The server advertises it as: "Download SVG and PNG images used in a Figma file based on the IDs of image or icon nodes." Its description also includes the absolute path of the server's image directory, so the agent knows where files will land.
+
+There are two kinds of download:
+
+- **Image fills**: a node with an `imageRef` or `gifRef` in its fills. The original image file is downloaded.
+- **Rendered nodes**: any other node, such as an icon or illustration. Figma renders it. A `fileName` ending in `.svg` renders as SVG; any other extension renders as PNG at `pngScale`.
+
+The agent gets every value it needs for each node from the `get_figma_data` output.
+
+### Parameters
+
+<ResponseField name="fileKey" type="string" required>
+  The key of the Figma file containing the images. Must be alphanumeric.
+</ResponseField>
+
+<ResponseField name="nodes" type="object[]" required>
+  The nodes to download. Each entry takes the fields below.
+</ResponseField>
+
+<ResponseField name="nodes[].nodeId" type="string" required>
+  The ID of the node, formatted as `1234:5678`. The URL form `1234-5678` and nested instance paths like `I5666:180910;1:10515;1:10336` are also accepted.
+</ResponseField>
+
+<ResponseField name="nodes[].imageRef" type="string">
+  Required when the node has an `imageRef` fill. Leave it out for vector SVGs, for animated GIFs (use `gifRef`), and for an image fill with no `imageRef`, which is rendered as PNG from `nodeId` instead.
+</ResponseField>
+
+<ResponseField name="nodes[].gifRef" type="string">
+  Required when the node has a `gifRef` fill. Use it instead of `imageRef` to get the animated file rather than a static frame.
+</ResponseField>
+
+<ResponseField name="nodes[].fileName" type="string" required>
+  The name to save the file as, including the extension. Only letters, numbers, underscores, dots, and hyphens are allowed, and it must end in `.png`, `.svg`, or `.gif`.
+</ResponseField>
+
+<ResponseField name="nodes[].needsCropping" type="boolean">
+  Whether the image needs cropping based on its transform matrix.
+</ResponseField>
+
+<ResponseField name="nodes[].cropTransform" type="number[][]">
+  The Figma transform matrix used to crop the image.
+</ResponseField>
+
+<ResponseField name="nodes[].requiresImageDimensions" type="boolean">
+  Whether to report the image's dimensions as CSS variables, used to size tiled background images.
+</ResponseField>
+
+<ResponseField name="nodes[].filenameSuffix" type="string">
+  A suffix appended to the file name so differently cropped copies of the same image don't overwrite each other, such as `abc123`. Provided in the Figma data. Only letters, numbers, underscores, and hyphens are allowed.
+</ResponseField>
+
+<ResponseField name="pngScale" type="number" default="2">
+  Export scale for PNG images. Must be positive. Affects PNG images only.
+</ResponseField>
+
+<ResponseField name="localPath" type="string" required>
+  The directory to save images in, relative to the server's image directory, such as `public/images` or `assets/icons`. Either path separator works. An absolute path is accepted only if it points inside the image directory. The directory is created if it doesn't exist.
+</ResponseField>
+
+### Where files are saved
+
+Every download lands inside the server's image directory, set with [`--image-dir`](/configuration#images) and defaulting to the directory the server was started from. The tool rejects a `localPath` that resolves outside it, including absolute paths elsewhere on disk, and a Windows drive-letter path such as `C:\...` when the server runs on macOS or Linux. The error names the image directory and suggests a relative path to use instead.
+
+<Warning>
+  Many MCP clients start the server from a directory other than your project. If images end up in the wrong place, or every path is rejected, set `--image-dir` to your project root.
+</Warning>
+
+### Returns
+
+A text result naming the absolute directory the files were written to, followed by one line per file with its final dimensions:
+
+```text
+Downloaded 2 images to `/Users/me/my-app/public/images`:
+- hero.png: 1440x960
+- logo.svg: 120x32
+```
+
+A line can also include:
+
+- `(cropped)` when the image was cropped using its transform.
+- CSS variables when `requiresImageDimensions` was set, such as `640x480 | --original-width: 640px; --original-height: 480px;`.
+- `(also requested as: ...)` when several requested file names pointed at the same image fill. The image is downloaded once and the other names are listed here.
+
+If the request fails, the tool returns an error result whose text starts with `Failed to download images:` followed by the reason.
+
+## Output formats
+
+`get_figma_data` can return the same design in three formats. The server uses `tree` unless you pass `--format=yaml` or `--format=json` (or set `OUTPUT_FORMAT`). See [Configuration](/configuration#output).
+
+All three formats carry the same data. The examples below are the same design, a row of two text tags, in each format.
+
+### tree
+
+The default for the server. `tree` is built for LLMs: it encodes each node's type, name, ID, and nesting by position instead of repeating them as keys, so less of the agent's context goes to structure and more to the design itself.
+
+```text
+NAME: "Blog"
+
+GLOBAL_VARS:
+layout_177c5efc:
+  mode: none
+  sizing:
+    horizontal: hug
+    vertical: hug
+style_e995e5c4:
+  fontFamily: Inter
+  fontStyle: Regular
+  fontWeight: 400
+  fontSize: 14
+  lineHeight: 1.5em
+  textAlignHorizontal: LEFT
+  textAlignVertical: TOP
+fill_1693a4d4:
+  - '#6B7280'
+
+NODES:
+[FRAME] "Tags" #8:20 layout={"mode":"row","alignItems":"center","gap":"8px","sizing":{"horizontal":"hug","vertical":"hug"}}
+  [TEXT] #8:21 layout=layout_177c5efc fills=fill_1693a4d4 textStyle=style_e995e5c4 text="Design"
+  [TEXT] #8:22 layout=layout_177c5efc fills=fill_1693a4d4 textStyle=style_e995e5c4 text="Engineering"
+```
+
+How to read it:
+
+- Each node is one line: `[TYPE] "name" #id`, then its properties as `key=value`. Indentation shows nesting, so `id`, `name`, `type`, and `children` never need to be spelled out as keys.
+- A bare value like `fills=fill_1693a4d4` is a reference to an entry in `GLOBAL_VARS`. An inline value, used by only this node, is written as compact JSON, like the `layout` on the `Tags` frame.
+- Names are always quoted, and the name is left out when it's noise. The two text nodes above have none.
+- `NAME` and `NODES` always appear; the other sections are omitted when empty. When the design has repeated elements, an `ELEMENTS` section appears and those nodes point at it, as in `[FRAME] "Button" #12:38 template=EL-f4487ab7`. `COMPONENTS` and `COMPONENT_SETS` sections appear when the data includes components.
+
+### yaml
+
+The output as a YAML document with `metadata`, `nodes`, `globalVars`, and `elements` keys. Children nest under `children`. This excerpt shows the start of the same design:
+
+```yaml
+metadata:
+  name: Blog
+  components: {}
+  componentSets: {}
+nodes:
+  - id: 8:20
+    name: Tags
+    type: FRAME
+    layout:
+      mode: row
+      alignItems: center
+      gap: 8px
+      sizing:
+        horizontal: hug
+        vertical: hug
+    children:
+      - id: 8:21
+        type: TEXT
+        layout: layout_177c5efc
+        text: Design
+        textStyle: style_e995e5c4
+        fills: fill_1693a4d4
+```
+
+Use `yaml` or `json` when a script, rather than an agent, needs to parse the output.
+
+### json
+
+The same structure as `yaml`, as pretty-printed JSON. The second tag from the design above looks like this inside `nodes[0].children`:
+
+```json
+{
+  "id": "8:22",
+  "type": "TEXT",
+  "layout": "layout_177c5efc",
+  "text": "Engineering",
+  "textStyle": "style_e995e5c4",
+  "fills": "fill_1693a4d4"
+}
+```
+
+`json` is the most verbose of the three, since every key and nesting level is spelled out with braces and quotes.

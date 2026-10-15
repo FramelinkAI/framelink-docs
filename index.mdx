@@ -1,12 +1,27 @@
 ---
 title: "Framelink MCP for Figma"
 sidebarTitle: "Introduction"
-description: "Framelink connects your Figma designs directly to AI coding agents. The MCP provides comprehensive design data that helps agents understand your designs significantly better than a screenshot, and generates code that's much closer to pixel-perfect straight out of the gate."
+description: "Give your coding agent structured data from your Figma designs, so it builds UI that matches the design far more closely than it can from a screenshot."
 ---
 
-<Card title="Quickstart" icon="rocket" href="/quickstart" horizontal>
-  Connect Figma to your coding agent in about five minutes.
-</Card>
+Framelink MCP for Figma is a [Model Context Protocol](https://modelcontextprotocol.io/introduction) server that connects your coding agent to Figma. Paste a link to a Figma file, frame, or group into your agent's chat, ask it to implement the design, and the agent fetches the design data it needs to write the code.
+
+## What it does
+
+The server calls the Figma API on your behalf and gives your agent two tools:
+
+- **`get_figma_data`** returns the design as structured data: the layer hierarchy, layout (including auto layout and grid), styling such as colors, gradients, strokes, and effects, text content and styles, and component information.
+- **`download_figma_images`** saves the PNG, SVG, and GIF assets a design uses into your project.
+
+The raw Figma API response is large and full of detail a model doesn't need. Before handing it to your agent, the server simplifies and translates it so only the relevant layout and styling information remains. Less noise in context makes the agent more accurate.
+
+## Why not just a screenshot?
+
+A screenshot forces the agent to guess spacing, colors, font sizes, and how elements are grouped. Structured data gives it the exact values and the real structure of the design, so the first pass of code lands much closer to the design.
+
+## What it isn't
+
+Framelink MCP for Figma reads designs. It doesn't write code itself — your coding agent does that, using the data the server provides. It works with any agent or editor that supports MCP servers.
 
 ## Video demo
 
@@ -21,3 +36,26 @@ Check out this video to see the MCP server in action.
     allowFullScreen
   />
 </Frame>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Connect Figma to your coding agent in about five minutes.
+  </Card>
+  <Card title="Authentication" icon="key" href="/authentication">
+    Create a Figma access token and pass it to the server.
+  </Card>
+  <Card title="Configuration reference" icon="sliders" href="/configuration">
+    Every CLI flag and environment variable the server reads.
+  </Card>
+  <Card title="MCP tools reference" icon="wrench" href="/tools">
+    The tools your agent can call, and their parameters.
+  </Card>
+  <Card title="Troubleshooting" icon="life-ring" href="/troubleshooting">
+    Fixes for common setup and connection problems.
+  </Card>
+  <Card title="Best practices" icon="lightbulb" href="/best-practices">
+    Get better results from your designs and prompts.
+  </Card>
+</CardGroup>
