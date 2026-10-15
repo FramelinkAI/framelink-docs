@@ -405,16 +405,6 @@ Add this to your Zed `settings.json`. See the [Zed Context Server docs](https://
 ```
 </Tab>
 
-<Tab title="Smithery">
-To install the Framelink MCP server for any client automatically via [Smithery](https://smithery.ai):
-
-```bash
-npx -y @smithery/cli@latest install figma-developer-mcp --client <CLIENT_NAME> --key <YOUR_SMITHERY_KEY>
-```
-
-You can find your Smithery key on the [Smithery website](https://smithery.ai).
-</Tab>
-
 <Tab title="JetBrains AI Assistant">
 1. In any JetBrains IDE, go to **Settings** → **Tools** → **AI Assistant** → **Model Context Protocol (MCP)**.
 2. Click **+ Add**.
@@ -622,10 +612,6 @@ droid mcp add Framelink_Figma_MCP "npx -y figma-developer-mcp --figma-api-key=YO
 [Emdash](https://github.com/generalaction/emdash) is an orchestration layer for running multiple coding agents in parallel. Emdash does not modify your agent's config directly — you still need to configure your coding agent (Codex, Claude Code, Cursor, etc.) to connect to the Framelink MCP using the instructions for that specific agent on this page.
 
 See the [Emdash repository](https://github.com/generalaction/emdash) for more information.
-</Tab>
-
-<Tab title="Desktop Extension (MCPB)">
-If your client supports MCP bundles, you can install a `.mcpb` file directly. See the [MCP bundles docs](https://github.com/anthropics/mcpb#mcp-bundles-mcpb) for more info.
 </Tab>
 
 </Tabs>

@@ -2,7 +2,7 @@
 
 Public, user-facing documentation for Framelink, published by Mintlify from this repo. `docs.json` holds site config and navigation; each page is an `.mdx` file.
 
-This repo is public, including branches and history. Don't document unannounced features here.
+This repo is public, including branches and history. `main` deploys on push, so it documents only what's released: check claims against the latest `figma-developer-mcp` tag on npm, not a working branch. Docs for unreleased work (the Figma plugin, code mode) go on the local, unpushed `plugin-launch` branch until launch.
 
 ## Rules
 
