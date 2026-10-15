@@ -4,9 +4,9 @@ description: "Connect Figma to your coding agent, then build something from a re
 ---
 ## Let your agent set it up
 
-The easiest way to get started is to let your agent set it up. Copy and paste the prompt below to your active agent and get started.
+The fastest way to get started: copy this prompt into your coding agent. It walks through creating a Figma token and adding the server, and stops at the two steps you need to do yourself — signing in to Figma and copying the token.
 
-<Prompt description="Paste this into your coding agent and it will walk you through setup.">
+```text Setup prompt wrap expandable
 Set up the Framelink Figma MCP server for me. Work through these steps in order and stop where I need to act.
 
 1. Open https://www.figma.com in a browser. If Figma asks for credentials, stop and let me sign in myself. Do not type them for me.
@@ -42,37 +42,39 @@ Set up the Framelink Figma MCP server for me. Work through these steps in order 
 6. Reload your MCP servers (restart if that's what your harness needs) and confirm the Framelink tools are available. If they aren't, read the server's startup output and tell me what failed.
 
 7. Tell me you're ready, and I'll send you a Figma link to build from.
-</Prompt>
+```
 
-## 1. Grab your Figma access token
+## Get a Figma access token
 
-### Open your Figma account settings
-
+<Steps>
+  <Step title="Open your Figma account settings">
 From the home page in Figma, click your profile icon in the top left corner, then choose **Settings**.
 
 <Frame>
   <img src="/images/quickstart/figma-open-settings.png" alt="The Figma profile menu open, with the Settings item highlighted" />
 </Frame>
-
-### Generate a new token
-
+  </Step>
+  <Step title="Generate a new token">
 In the settings dialog, switch to the **Security** tab, scroll down to **Personal access tokens**, and click **Generate new token**.
 
 <Frame>
   <img src="/images/quickstart/figma-generate-token.png" alt="The Security tab of Figma settings, with the Generate new token link highlighted" />
 </Frame>
-
-### Select the scopes the MCP needs
-
+  </Step>
+  <Step title="Select the scopes the MCP needs" id="token-scopes">
 Give the token a name, set an expiration, then **check every scope shown below** before clicking <code>Generate&nbsp;token</code>. Figma tokens are scoped, and a token created with the defaults will not have what the MCP needs.
 
 <Frame>
   <img src="/images/quickstart/figma-token-scopes.png" alt="The Figma token scope picker with current_user:read, file_comments:read, file_comments:write, file_content:read, file_metadata:read, file_versions:read, library_assets:read, library_content:read, team_library_content:read, file_dev_resources:read, and file_dev_resources:write all checked" />
 </Frame>
+  </Step>
+</Steps>
 
 If you need more detailed instructions, you can find them in [Figma's documentation on access tokens](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens).
 
-## 2. Install in your editor or agent
+## Install in your editor or agent
+
+The most common clients are below. For anything else, see [other editors and agents](#other-editors-and-agents).
 
 <Tabs>
 
@@ -101,22 +103,6 @@ Or paste the following into your `~/.cursor/mcp.json` file. You can also install
 ```
 </Tab>
 
-<Tab title="Opencode">
-Add this to your Opencode configuration file. See the [Opencode MCP docs](https://opencode.ai/docs/mcp-servers) for more info.
-
-```json
-{
-  "mcp": {
-    "Framelink_Figma_MCP": {
-      "type": "local",
-      "command": ["npx", "-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
-      "enabled": true
-    }
-  }
-}
-```
-</Tab>
-
 <Tab title="OpenAI Codex">
 Add the following to your Codex configuration. See [OpenAI Codex](https://github.com/openai/codex) for more info.
 
@@ -124,21 +110,6 @@ Add the following to your Codex configuration. See [OpenAI Codex](https://github
 [mcp_servers.Framelink_Figma_MCP]
 command = "npx"
 args = ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-```
-</Tab>
-
-<Tab title="Google Antigravity">
-Add this to your Antigravity MCP config file. See the [Antigravity MCP docs](https://antigravity.google/docs/mcp) for more info.
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
 ```
 </Tab>
 
@@ -150,62 +121,6 @@ Add this to your VS Code MCP config file. See the [VS Code MCP docs](https://cod
   "servers": {
     "Framelink_Figma_MCP": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-</Tab>
-
-<Tab title="Kiro">
-1. Navigate to **Kiro** → **MCP Servers**.
-2. Click the **+ Add** button.
-3. Paste the configuration:
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
-      "env": {},
-      "disabled": false,
-      "autoApprove": []
-    }
-  }
-}
-```
-
-4. Click **Save** to apply.
-
-See the [Kiro MCP docs](https://kiro.dev/docs/mcp/configuration/) for more info.
-</Tab>
-
-<Tab title="Kilo Code">
-Create `.kilocode/mcp.json` in your project directory with the following configuration:
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-
-You can also configure it via the Kilo Code UI under **Settings** → **MCP Servers** → **Add Server**.
-</Tab>
-
-<Tab title="Roo Code">
-Add this to your Roo Code MCP configuration file. See the [Roo Code MCP docs](https://docs.roocode.com/features/mcp/using-mcp-in-roo) for more info.
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
       "command": "npx",
       "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
     }
@@ -244,8 +159,15 @@ Open Claude Desktop, go to **Settings**, then **Developer**, and edit your `clau
 ```
 </Tab>
 
-<Tab title="Trae">
-Use the **Add manually** feature and fill in the JSON configuration. See the [Trae docs](https://docs.trae.ai/ide/model-context-protocol?_lang=en) for more info.
+</Tabs>
+
+### Other editors and agents
+
+<AccordionGroup>
+
+<Accordion title="Amazon Q Developer CLI">
+
+Add this to your Amazon Q Developer CLI configuration file. See the [Amazon Q Developer CLI docs](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-mcp-configuration.html) for more info.
 
 ```json
 {
@@ -257,9 +179,59 @@ Use the **Add manually** feature and fill in the JSON configuration. See the [Tr
   }
 }
 ```
-</Tab>
 
-<Tab title="Cline">
+</Accordion>
+
+<Accordion title="Amp">
+
+Run this command in your terminal. See the [Amp MCP docs](https://ampcode.com/manual#mcp) for more info.
+
+```bash
+amp mcp add Framelink_Figma_MCP -- npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio
+```
+
+</Accordion>
+
+<Accordion title="Augment Code">
+
+1. Press `Cmd/Ctrl+Shift+P` or go to the hamburger menu in the Augment panel.
+2. Select **Edit Settings**.
+3. Under **Advanced**, click **Edit in settings.json**.
+4. Add the server configuration to the `mcpServers` array in the `augment.advanced` object:
+
+```json
+"augment.advanced": {
+  "mcpServers": [
+    {
+      "name": "Framelink_Figma_MCP",
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  ]
+}
+```
+
+</Accordion>
+
+<Accordion title="BoltAI">
+
+Open **Settings**, navigate to **Plugins**, and enter the following configuration. See [BoltAI's documentation](https://docs.boltai.com/docs/plugins/mcp-servers) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Cline">
+
 1. Open **Cline** in VS Code.
 2. Click the hamburger menu icon to enter the **MCP Servers** section.
 3. Choose the **Installed** tab.
@@ -277,58 +249,11 @@ Use the **Add manually** feature and fill in the JSON configuration. See the [Tr
 ```
 
 See the [Cline MCP docs](https://docs.cline.bot/mcp/mcp-overview) for more info.
-</Tab>
 
-<Tab title="Augment Code">
-1. Press `Cmd/Ctrl+Shift+P` or go to the hamburger menu in the Augment panel.
-2. Select **Edit Settings**.
-3. Under **Advanced**, click **Edit in settings.json**.
-4. Add the server configuration to the `mcpServers` array in the `augment.advanced` object:
+</Accordion>
 
-```json
-"augment.advanced": {
-  "mcpServers": [
-    {
-      "name": "Framelink_Figma_MCP",
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  ]
-}
-```
-</Tab>
+<Accordion title="Copilot CLI">
 
-<Tab title="Gemini CLI">
-Open the Gemini CLI settings file at `~/.gemini/settings.json` and add the following to the `mcpServers` object. See the [Gemini CLI docs](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html) for more info.
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-</Tab>
-
-<Tab title="Copilot Coding Agent">
-Add the following configuration to **Repository** → **Settings** → **Copilot** → **Coding agent** → **MCP configuration**. See the [GitHub Copilot coding agent docs](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/agents/copilot-coding-agent/extending-copilot-coding-agent-with-mcp) for more info.
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-</Tab>
-
-<Tab title="Copilot CLI">
 Open `~/.copilot/mcp-config.json` and add the following configuration:
 
 ```json
@@ -342,10 +267,12 @@ Open `~/.copilot/mcp-config.json` and add the following configuration:
   }
 }
 ```
-</Tab>
 
-<Tab title="Amazon Q Developer CLI">
-Add this to your Amazon Q Developer CLI configuration file. See the [Amazon Q Developer CLI docs](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-mcp-configuration.html) for more info.
+</Accordion>
+
+<Accordion title="Copilot Coding Agent">
+
+Add the following configuration to **Repository** → **Settings** → **Copilot** → **Coding agent** → **MCP configuration**. See the [GitHub Copilot coding agent docs](https://docs.github.com/en/enterprise-cloud@latest/copilot/how-tos/agents/copilot-coding-agent/extending-copilot-coding-agent-with-mcp) for more info.
 
 ```json
 {
@@ -357,55 +284,82 @@ Add this to your Amazon Q Developer CLI configuration file. See the [Amazon Q De
   }
 }
 ```
-</Tab>
 
-<Tab title="Warp">
-1. Navigate to **Settings** → **AI** → **Manage MCP servers**.
-2. Click the **+ Add** button.
-3. Paste the configuration:
+</Accordion>
 
-```json
-{
-  "Framelink_Figma_MCP": {
-    "command": "npx",
-    "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
-    "env": {},
-    "working_directory": null,
-    "start_on_launch": true
-  }
-}
-```
+<Accordion title="Crush">
 
-4. Click **Save**.
-
-See the [Warp MCP docs](https://docs.warp.dev/knowledge-and-collaboration/mcp#adding-an-mcp-server) for more info.
-</Tab>
-
-<Tab title="Amp">
-Run this command in your terminal. See the [Amp MCP docs](https://ampcode.com/manual#mcp) for more info.
-
-```bash
-amp mcp add Framelink_Figma_MCP -- npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio
-```
-</Tab>
-
-<Tab title="Zed">
-Add this to your Zed `settings.json`. See the [Zed Context Server docs](https://zed.dev/docs/assistant/context-servers) for more info.
+Add this to your Crush configuration file. See the [Crush MCP docs](https://github.com/charmbracelet/crush#mcps) for more info.
 
 ```json
 {
-  "context_servers": {
+  "$schema": "https://charm.land/crush.json",
+  "mcp": {
     "Framelink_Figma_MCP": {
-      "source": "custom",
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
     }
   }
 }
 ```
-</Tab>
 
-<Tab title="JetBrains AI Assistant">
+</Accordion>
+
+<Accordion title="Emdash">
+
+[Emdash](https://github.com/generalaction/emdash) is an orchestration layer for running multiple coding agents in parallel. Emdash does not modify your agent's config directly — you still need to configure your coding agent (Codex, Claude Code, Cursor, etc.) to connect to the Framelink MCP using the instructions for that specific agent on this page.
+
+See the [Emdash repository](https://github.com/generalaction/emdash) for more information.
+
+</Accordion>
+
+<Accordion title="Factory">
+
+Factory's droid supports MCP servers through its CLI. See the [Factory MCP docs](https://docs.factory.ai/cli/configuration/mcp) for more info.
+
+```bash
+droid mcp add Framelink_Figma_MCP "npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio"
+```
+
+</Accordion>
+
+<Accordion title="Gemini CLI">
+
+Open the Gemini CLI settings file at `~/.gemini/settings.json` and add the following to the `mcpServers` object. See the [Gemini CLI docs](https://google-gemini.github.io/gemini-cli/docs/tools/mcp-server.html) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Google Antigravity">
+
+Add this to your Antigravity MCP config file. See the [Antigravity MCP docs](https://antigravity.google/docs/mcp) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="JetBrains AI Assistant">
+
 1. In any JetBrains IDE, go to **Settings** → **Tools** → **AI Assistant** → **Model Context Protocol (MCP)**.
 2. Click **+ Add**.
 3. Click on **Command** in the top-left corner and select the **As JSON** option.
@@ -425,20 +379,12 @@ Add this to your Zed `settings.json`. See the [Zed Context Server docs](https://
 5. Click **Apply** to save changes.
 
 See the [JetBrains AI Assistant docs](https://www.jetbrains.com/help/ai-assistant/configure-an-mcp-server.html) for more info.
-</Tab>
 
-<Tab title="Qwen Code">
-You can use the CLI or add the config manually. See the [Qwen Code MCP docs](https://qwenlm.github.io/qwen-code-docs/en/users/features/mcp/) for more info.
+</Accordion>
 
-#### CLI
+<Accordion title="Kilo Code">
 
-```bash
-qwen mcp add Framelink_Figma_MCP npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio
-```
-
-#### Manual Configuration
-
-Open `~/.qwen/settings.json` (user scope) or `.qwen/settings.json` (project scope) and add:
+Create `.kilocode/mcp.json` in your project directory with the following configuration:
 
 ```json
 {
@@ -450,9 +396,39 @@ Open `~/.qwen/settings.json` (user scope) or `.qwen/settings.json` (project scop
   }
 }
 ```
-</Tab>
 
-<Tab title="LM Studio">
+You can also configure it via the Kilo Code UI under **Settings** → **MCP Servers** → **Add Server**.
+
+</Accordion>
+
+<Accordion title="Kiro">
+
+1. Navigate to **Kiro** → **MCP Servers**.
+2. Click the **+ Add** button.
+3. Paste the configuration:
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
+      "env": {},
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+4. Click **Save** to apply.
+
+See the [Kiro MCP docs](https://kiro.dev/docs/mcp/configuration/) for more info.
+
+</Accordion>
+
+<Accordion title="LM Studio">
+
 1. Navigate to **Program** (right side) → **Install** → **Edit mcp.json**.
 2. Paste the configuration:
 
@@ -470,116 +446,29 @@ Open `~/.qwen/settings.json` (user scope) or `.qwen/settings.json` (project scop
 3. Click **Save**.
 
 See [LM Studio MCP support](https://lmstudio.ai/blog/lmstudio-v0.3.17) for more info.
-</Tab>
 
-<Tab title="Visual Studio 2022">
-Add this to your Visual Studio MCP configuration. See the [Visual Studio MCP docs](https://learn.microsoft.com/visualstudio/ide/mcp-servers?view=vs-2022) for more info.
+</Accordion>
+
+<Accordion title="Opencode">
+
+Add this to your Opencode configuration file. See the [Opencode MCP docs](https://opencode.ai/docs/mcp-servers) for more info.
 
 ```json
 {
   "mcp": {
-    "servers": {
-      "Framelink_Figma_MCP": {
-        "type": "stdio",
-        "command": "npx",
-        "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-      }
-    }
-  }
-}
-```
-</Tab>
-
-<Tab title="Crush">
-Add this to your Crush configuration file. See the [Crush MCP docs](https://github.com/charmbracelet/crush#mcps) for more info.
-
-```json
-{
-  "$schema": "https://charm.land/crush.json",
-  "mcp": {
     "Framelink_Figma_MCP": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-</Tab>
-
-<Tab title="BoltAI">
-Open **Settings**, navigate to **Plugins**, and enter the following configuration. See [BoltAI's documentation](https://docs.boltai.com/docs/plugins/mcp-servers) for more info.
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-</Tab>
-
-<Tab title="Rovo Dev CLI">
-Edit your Rovo Dev CLI MCP config:
-
-```bash
-acli rovodev mcp
-```
-
-Then add the following:
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-    }
-  }
-}
-```
-</Tab>
-
-<Tab title="Zencoder">
-1. Go to the Zencoder menu (**...**).
-2. Select **Agent tools**.
-3. Click **Add custom MCP**.
-4. Add the name and configuration:
-
-```json
-{
-  "command": "npx",
-  "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
-}
-```
-
-5. Click **Install**.
-</Tab>
-
-<Tab title="Qodo Gen">
-1. Open the Qodo Gen chat panel in VS Code or IntelliJ.
-2. Click **Connect more tools**.
-3. Click **+ Add new MCP**.
-4. Add the configuration:
-
-```json
-{
-  "mcpServers": {
-    "Framelink_Figma_MCP": {
-      "command": "npx",
-      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+      "type": "local",
+      "command": ["npx", "-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
+      "enabled": true
     }
   }
 }
 ```
 
-See the [Qodo Gen docs](https://docs.qodo.ai/qodo-documentation/qodo-gen/qodo-gen-chat/agentic-mode/agentic-tools-mcps) for more info.
-</Tab>
+</Accordion>
 
-<Tab title="Perplexity Desktop">
+<Accordion title="Perplexity Desktop">
+
 1. Navigate to **Perplexity** → **Settings**.
 2. Select **Connectors**.
 3. Click **Add Connector**.
@@ -598,27 +487,200 @@ See the [Qodo Gen docs](https://docs.qodo.ai/qodo-documentation/qodo-gen/qodo-ge
 7. Click **Save**.
 
 See [Perplexity's MCP documentation](https://www.perplexity.ai/help-center/en/articles/11502712-local-and-remote-mcps-for-perplexity) for more info.
-</Tab>
 
-<Tab title="Factory">
-Factory's droid supports MCP servers through its CLI. See the [Factory MCP docs](https://docs.factory.ai/cli/configuration/mcp) for more info.
+</Accordion>
+
+<Accordion title="Qodo Gen">
+
+1. Open the Qodo Gen chat panel in VS Code or IntelliJ.
+2. Click **Connect more tools**.
+3. Click **+ Add new MCP**.
+4. Add the configuration:
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+See the [Qodo Gen docs](https://docs.qodo.ai/qodo-documentation/qodo-gen/qodo-gen-chat/agentic-mode/agentic-tools-mcps) for more info.
+
+</Accordion>
+
+<Accordion title="Qwen Code">
+
+You can use the CLI or add the config manually. See the [Qwen Code MCP docs](https://qwenlm.github.io/qwen-code-docs/en/users/features/mcp/) for more info.
+
+**CLI**
 
 ```bash
-droid mcp add Framelink_Figma_MCP "npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio"
+qwen mcp add Framelink_Figma_MCP npx -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio
 ```
-</Tab>
 
-<Tab title="Emdash">
-[Emdash](https://github.com/generalaction/emdash) is an orchestration layer for running multiple coding agents in parallel. Emdash does not modify your agent's config directly — you still need to configure your coding agent (Codex, Claude Code, Cursor, etc.) to connect to the Framelink MCP using the instructions for that specific agent on this page.
+**Manual Configuration**
 
-See the [Emdash repository](https://github.com/generalaction/emdash) for more information.
-</Tab>
+Open `~/.qwen/settings.json` (user scope) or `.qwen/settings.json` (project scope) and add:
 
-</Tabs>
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Roo Code">
+
+Add this to your Roo Code MCP configuration file. See the [Roo Code MCP docs](https://docs.roocode.com/features/mcp/using-mcp-in-roo) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Rovo Dev CLI">
+
+Edit your Rovo Dev CLI MCP config:
+
+```bash
+acli rovodev mcp
+```
+
+Then add the following:
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Trae">
+
+Use the **Add manually** feature and fill in the JSON configuration. See the [Trae docs](https://docs.trae.ai/ide/model-context-protocol?_lang=en) for more info.
+
+```json
+{
+  "mcpServers": {
+    "Framelink_Figma_MCP": {
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Visual Studio 2022">
+
+Add this to your Visual Studio MCP configuration. See the [Visual Studio MCP docs](https://learn.microsoft.com/visualstudio/ide/mcp-servers?view=vs-2022) for more info.
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "Framelink_Figma_MCP": {
+        "type": "stdio",
+        "command": "npx",
+        "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+      }
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Warp">
+
+1. Navigate to **Settings** → **AI** → **Manage MCP servers**.
+2. Click the **+ Add** button.
+3. Paste the configuration:
+
+```json
+{
+  "Framelink_Figma_MCP": {
+    "command": "npx",
+    "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"],
+    "env": {},
+    "working_directory": null,
+    "start_on_launch": true
+  }
+}
+```
+
+4. Click **Save**.
+
+See the [Warp MCP docs](https://docs.warp.dev/knowledge-and-collaboration/mcp#adding-an-mcp-server) for more info.
+
+</Accordion>
+
+<Accordion title="Zed">
+
+Add this to your Zed `settings.json`. See the [Zed Context Server docs](https://zed.dev/docs/assistant/context-servers) for more info.
+
+```json
+{
+  "context_servers": {
+    "Framelink_Figma_MCP": {
+      "source": "custom",
+      "command": "npx",
+      "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+    }
+  }
+}
+```
+
+</Accordion>
+
+<Accordion title="Zencoder">
+
+1. Go to the Zencoder menu (**...**).
+2. Select **Agent tools**.
+3. Click **Add custom MCP**.
+4. Add the name and configuration:
+
+```json
+{
+  "command": "npx",
+  "args": ["-y", "figma-developer-mcp", "--figma-api-key=YOUR-KEY", "--stdio"]
+}
+```
+
+5. Click **Install**.
+
+</Accordion>
+
+</AccordionGroup>
 
 Not listed? Most MCP clients take the same JSON. Check your editor's docs, or [join our Discord](https://discord.gg/MeE3UEjdGN).
 
-### Special Runtime Environments
+### Windows, Bun, and Deno
 
 <AccordionGroup>
 
@@ -643,7 +705,7 @@ On Windows, `npx` is a batch file (`npx.cmd`) and cannot be run directly by most
 
 If you prefer an alternative runtime to Node.js, you can use Bun or Deno to run the MCP server. Use these in place of the `npx` command in your editor's config above.
 
-#### Bun
+**Bun**
 
 ```json
 {
@@ -656,7 +718,7 @@ If you prefer an alternative runtime to Node.js, you can use Bun or Deno to run 
 }
 ```
 
-#### Deno
+**Deno**
 
 ```json
 {
@@ -680,12 +742,12 @@ If you prefer an alternative runtime to Node.js, you can use Bun or Deno to run 
 
 </AccordionGroup>
 
-## 3. Implement your first design
+## Implement your first design
 
 After configuring your IDE, you'll be able to pull complete design data from any Figma file.
 
-### Copy a link to a Figma frame or group
-
+<Steps>
+  <Step title="Copy a link to a Figma frame or group">
 The MCP server compresses the data it receives from the Figma API by almost 90%. Even still, complex designs can overwhelm AI agents with too much information.
 
 You can try to get your editor to implement a whole design for you, but for the most consistent results, work on one section at a time.
@@ -695,9 +757,8 @@ To do that, **right click on the frame or group you'd like to implement, then se
 <Frame>
   <img src="/images/quickstart/figma-copy-link.png" alt="The Figma right-click menu with Copy/Paste as, then Copy link to selection" />
 </Frame>
-
-### Paste the link into your editor
-
+  </Step>
+  <Step title="Paste the link into your editor">
 Once you have a link to the Figma frame or group, you can make a request to your editor's AI agent.
 
 A request as simple as "Implement this Figma frame" along with the link should be enough to get the agent to call the MCP's `get_figma_data` function, but [more context is often helpful in getting the best results](/best-practices).
@@ -705,9 +766,8 @@ A request as simple as "Implement this Figma frame" along with the link should b
 <Frame>
   <img src="/images/quickstart/ide-paste-link.png" alt="A Figma selection link pasted into an editor chat prompt" />
 </Frame>
-
-### Get your design
-
+  </Step>
+  <Step title="Get your design">
 After submitting your request, your coding agent will get to work. It should call the MCP's `get_figma_data` function with the link you provided. Using the information returned from this function, your agent will generate a design.
 
 <Frame>
@@ -721,6 +781,8 @@ The design, however, is complete and functional.
 <Frame>
   <img src="/images/quickstart/chrome-final-product.png" alt="The implemented design rendered in a browser" />
 </Frame>
+  </Step>
+</Steps>
 
 ## Troubleshooting
 
