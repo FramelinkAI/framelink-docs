@@ -31,7 +31,9 @@ Set up the Framelink Figma MCP server for me. Work through these steps in order 
 5. Once I give you the token, add the MCP server to whichever harness you are running in right now. Look up that harness's own MCP configuration format and file location rather than guessing; if you aren't sure which harness you're in, ask me. The server is:
 
      command: npx
-     args:    -y figma-developer-mcp --figma-api-key=\<the token I gave you\> --stdio
+     args:    -y figma-developer-mcp --figma-api-key=YOUR-KEY --stdio
+
+   Replace YOUR-KEY with the token I gave you.
 
    On Windows, npx is a batch file that most MCP clients can't launch directly. Use "cmd" as the command and put "/c", "npx" at the front of the args instead.
 
