@@ -18,7 +18,7 @@ Ask your IT department for your proxy URL, then add `--proxy` to your MCP server
 ```json MCP client configuration
 {
   "mcpServers": {
-    "Framelink MCP for Figma": {
+    "Framelink_Figma_MCP": {
       "command": "npx",
       "args": [
         "-y",
@@ -111,7 +111,7 @@ If the error body doesn't match one of the above:
 
 ## 429 Too Many Requests
 
-If you encounter a `429: Too Many Requests` error, it means you have exceeded the Figma API rate limits. There is no rate limiting built into the Framelink MCP itself; these limits come directly from Figma.
+If you encounter a `429: Too Many Requests` error, it means you have exceeded the Figma API rate limits. There is no rate limiting built into Framelink MCP for Figma itself; these limits come directly from Figma.
 
 There are a few common causes and solutions for this issue.
 
@@ -155,7 +155,7 @@ Then run `chmod +x /usr/local/bin/npx-for-claude` to make it executable. Update 
 ```json Claude Desktop configuration
 {
   "mcpServers": {
-    "Framelink MCP for Figma": {
+    "Framelink_Figma_MCP": {
       "command": "npx-for-claude",
       "args": [
         "-y",
