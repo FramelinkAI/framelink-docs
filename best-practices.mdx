@@ -1,0 +1,25 @@
+---
+title: "Best practices"
+description: "How to get the most out of the Framelink MCP for Figma."
+---
+
+<Note>This page is a work in progress.</Note>
+
+There are a few things you can do to maximize the quality of AI-generated code from your Figma designs. This guide covers best practices for working with Figma and your AI coding agent.
+
+## In Figma
+
+Generally speaking, you'll want to structure your Figma file in a way that makes it easy to understand and implement.
+
+- Use auto layouts—the MCP isn't great at handling floating or absolutely positioned elements just yet
+- Name your frames and groups
+  - Protip: Try Figma's AI to automatically generate names
+
+## In your editor
+
+The overall key in managing any LLM is to provide the correct context. That's what this MCP helps with, but you'll also need to help your editor get all the context it needs to be successful.
+
+- Let the agent know what resources are available to it (e.g. Tailwind, React)
+  - Reference key files in your codebase to provide additional context
+- Provide written details about the design in addition to the raw data from Figma
+- Manage context size—provide links to frames and groups instead of the whole file

@@ -1,0 +1,71 @@
+---
+title: "Alternative server configurations"
+description: "Run the Framelink MCP for Figma over HTTP/SSE or from a local clone of the repository."
+---
+
+There are a few alternate methods for connecting to Figma. Though the recommended method of running the MCP is in the [Quickstart guide](/quickstart), this guide will cover some other ways to run the server.
+
+## Server-sent events (SSE)
+
+The MCP server can be configured to use Server-Sent Events (SSE) to stream responses to the client. If you're having issues with the stdio method in quickstart, this is a good alternative.
+
+### Start the server
+
+Use `npx` on the command line to run the MCP server.
+
+```bash
+> npx figma-developer-mcp --figma-api-key=YOUR-KEY
+# Initializing Figma MCP Server in HTTP mode on port 3333...
+# HTTP server listening on port 3333
+# SSE endpoint available at http://localhost:3333/sse
+# Message endpoint available at http://localhost:3333/messages
+```
+
+### Configure your JSON file to connect to the SSE endpoint
+
+The default port for the MCP server is `3333`. You can include the `--port=1234` flag in your `npx` command to change the port number.
+
+```json
+{
+  "mcpServers": {
+    "Framelink MCP for Figma": {
+      "url": "http://localhost:3333/sse",
+      "env": {
+        "FIGMA_API_KEY": "YOUR-KEY"
+      }
+    }
+  }
+}
+```
+
+In HTTP/SSE mode the server can also accept a Figma token per request via the `X-Figma-Token` header instead of (or in addition to) a server-level `FIGMA_API_KEY`. See [Per-request token](/configuration#per-request-token) for details.
+
+## Running the MCP server locally
+
+1. Clone the [repository](https://github.com/GLips/Figma-Context-MCP)
+2. Install dependencies with `pnpm install`
+3. Copy `.env.example` to `.env` and fill in your [Figma API access token](https://help.figma.com/hc/en-us/articles/8085703771159-Manage-personal-access-tokens). Only read access is required.
+4. Run the server with `pnpm run dev`, along with any of the flags below.
+5. Configure your JSON file to connect to the SSE server, as shown in the section above.
+
+### Command-line arguments
+
+- `--version`: Show version number
+- `--figma-api-key`: Your Figma API access token
+- `--port`: The port to run the server on
+- `--help`: Show help menu
+
+## Inspect responses
+
+To inspect responses from the MCP server more easily, you can run the `inspect` command from the local repository via `pnpm inspect`. This launches the `@modelcontextprotocol/inspector` web UI for triggering tool calls and reviewing responses:
+
+```bash
+pnpm inspect
+# > figma-mcp@0.1.12 inspect
+# > pnpx @modelcontextprotocol/inspector
+#
+# Starting MCP inspector...
+# Proxy server listening on port 3333
+#
+# 🔍 MCP Inspector is up and running at http://localhost:5173 🚀
+```

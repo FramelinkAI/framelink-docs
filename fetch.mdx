@@ -1,0 +1,79 @@
+---
+title: "CLI usage"
+description: "Use the Framelink CLI to pull simplified Figma design data without running a server."
+---
+
+Beyond running as an MCP server, `figma-developer-mcp` can be used directly from the command line to fetch simplified Figma design data. This is useful for scripting, piping design data into other tools, or quick one-off lookups during development.
+
+Running `figma-developer-mcp` with no subcommand starts the MCP server as usual. The `fetch` subcommand below is what enables direct CLI usage.
+
+## fetch
+
+Pull simplified design data for a Figma file or node and print it to stdout. Uses the same simplification pipeline as the MCP server's `get_figma_data` tool, so the output is identical.
+
+```bash
+npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File?node-id=1-2" \
+  --figma-api-key=figd_xxxxxx
+```
+
+Output is YAML by default. Pass `--format=json` for JSON, or `--format=tree` for the compact tree format. See [Configuration](/configuration#format) for details on each format.
+
+Authentication works the same as the server — provide a Figma API key or OAuth token via flag or environment variable. See [Configuration](/configuration) for details on authentication and `.env` files.
+
+<Note>
+  Shell characters like `&` in Figma URLs can cause issues. Always wrap URLs in quotes.
+</Note>
+
+## Flags
+
+The `fetch` subcommand accepts a Figma URL as a positional argument, plus the following flags:
+
+| Flag | Description |
+|------|-------------|
+| `--file-key` | Figma file key (overrides the URL) |
+| `--node-id` | Node ID in `1234:5678` format (overrides the URL) |
+| `--depth` | Limit tree traversal depth |
+| `--format` | Output format: `yaml` (default), `json`, or `tree` |
+| `--json` | Back-compat alias for `--format=json` |
+| `--figma-api-key` | Figma API key (Personal Access Token) |
+| `--figma-oauth-token` | Figma OAuth Bearer token |
+| `--env` | Path to `.env` file |
+
+When both a URL and explicit flags are provided, the flags take precedence. This lets you override just the node ID while still pulling the file key from a URL, for example.
+
+## Examples
+
+### Fetch a specific node as YAML
+
+```bash
+npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File?node-id=1-2" \
+  --figma-api-key=figd_xxxxxx
+```
+
+### Fetch as JSON and pipe to jq
+
+```bash
+npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File?node-id=1-2" \
+  --figma-api-key=figd_xxxxxx --format=json | jq '.nodes[0]'
+```
+
+### Use explicit flags instead of a URL
+
+```bash
+npx figma-developer-mcp fetch --file-key ABC123 --node-id 1:2 \
+  --figma-api-key=figd_xxxxxx
+```
+
+### Limit traversal depth
+
+```bash
+npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File" \
+  --figma-api-key=figd_xxxxxx --depth 3
+```
+
+### Save output to a file
+
+```bash
+npx figma-developer-mcp fetch "https://figma.com/design/ABC123/My-File?node-id=1-2" \
+  --figma-api-key=figd_xxxxxx > design-data.yaml
+```

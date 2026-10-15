@@ -12,8 +12,25 @@
     "light": "/logo/favicon-light.svg",
     "dark": "/logo/favicon-dark.svg"
   },
+  "navbar": {
+    "links": [{ "type": "discord", "href": "https://discord.gg/MeE3UEjdGN" }],
+    "primary": { "type": "github", "href": "https://github.com/GLips/Figma-Context-MCP" }
+  },
   "navigation": {
-    "groups": [{ "group": "Getting started", "pages": ["quickstart"] }]
+    "groups": [
+      {
+        "group": "Guides",
+        "pages": [
+          "index",
+          "quickstart",
+          "configuration",
+          "fetch",
+          "best-practices",
+          "troubleshooting",
+          "alternate-methods"
+        ]
+      }
+    ]
   },
   "contextual": { "options": ["copy", "view", "chatgpt", "claude", "cursor", "vscode"] }
 }
